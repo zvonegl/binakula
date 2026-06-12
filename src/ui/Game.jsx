@@ -120,6 +120,7 @@ export default function Game({ config, onExit }) {
   }, [version, myTurn, viewerSeat]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleSelect(id) {
+    if (suppressClick.current) { suppressClick.current = false; return; }
     if (!myTurn) return;
     setSelected((s) => {
       const n = new Set(s);
@@ -208,13 +209,76 @@ export default function Game({ config, onExit }) {
     bump();
   }
 
-  const dragIdx = useRef(null);
-  function reorderHand(from, to) {
-    if (from == null || to == null || from === to) return;
-    const hand = r.hands[viewerSeat];
-    const [c] = hand.splice(from, 1);
-    hand.splice(to, 0, c);
-    bump();
+  // ----- povlačenje karata (pointer events — radi i mišem i prstom) -------
+  const handRef = useRef(null);
+  const dragInfo = useRef(null);
+  const suppressClick = useRef(false);
+  const [tableDrag, setTableDrag] = useState(null); // {id, x, y} — karta se nosi na stol
+
+  const fanStep = (n) =>
+    Math.max(16, Math.min(46, (Math.min(window.innerWidth, 1500) - 170) / Math.max(n - 1, 1)));
+
+  function startCardDrag(e, id) {
+    if (!viewerIsHuman) return;
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* sintetički event */ }
+    dragInfo.current = { id, startX: e.clientX, startY: e.clientY, mode: null };
+  }
+
+  function moveCardDrag(e) {
+    const d = dragInfo.current;
+    if (!d) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    if (!d.mode) {
+      if (dy < -42 && myTurn && r.phase === 'meld') d.mode = 'table';
+      else if (Math.abs(dx) > 10) d.mode = 'reorder';
+      else return;
+      suppressClick.current = true;
+    }
+    if (d.mode === 'reorder') {
+      const hand = r.hands[viewerSeat];
+      const n = hand.length;
+      const rect = handRef.current.getBoundingClientRect();
+      const rel = (e.clientX - (rect.left + rect.width / 2)) / fanStep(n) + (n - 1) / 2;
+      const to = Math.max(0, Math.min(n - 1, Math.round(rel)));
+      const from = hand.indexOf(d.id);
+      if (to !== from) {
+        hand.splice(from, 1);
+        hand.splice(to, 0, d.id);
+        bump();
+      }
+    } else {
+      setTableDrag({ id: d.id, x: e.clientX, y: e.clientY });
+    }
+  }
+
+  function endCardDrag(e) {
+    const d = dragInfo.current;
+    dragInfo.current = null;
+    if (!d) return;
+    if (d.mode === 'table') {
+      setTableDrag(null);
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const meldEl = el && el.closest('[data-meld-id]');
+      if (meldEl) { dropOnMeld(Number(meldEl.dataset.meldId), d.id); return; }
+      if (el && el.closest('.discard-outer')) { act(() => discard(g, viewerSeat, d.id)); }
+    }
+  }
+
+  function cancelCardDrag() {
+    dragInfo.current = null;
+    setTableDrag(null);
+  }
+
+  // Ispusti kartu iz ruke na kombinaciju (svoju ili partnerovu).
+  function dropOnMeld(meldId, cardId) {
+    const meld = r.melds.find((m) => m.id === meldId);
+    if (!meld) return;
+    if (meld.side !== mySide) { showToast('Na protivničke kombinacije ne smiješ dodavati karte.'); return; }
+    const all = [...meld.cardIds, cardId].map((id) => g.cardsById[id]);
+    const sols = solveJokerAssignments(all, meld.jokerMap);
+    if (sols.length === 0) { showToast('Ta se karta ne uklapa u tu kombinaciju.'); return; }
+    act(() => meldAdd(g, viewerSeat, meld.id, [cardId], sols[0].map));
   }
 
   function nextRound() {
@@ -266,7 +330,8 @@ export default function Game({ config, onExit }) {
                 <SeatChip g={g} seat={seatAt[pos]} active={r.turn === seatAt[pos] && !r.closed} dealer={g.dealer === seatAt[pos]} />
                 <MeldZone g={g} seat={seatAt[pos]}
                   onMeldClick={selected.size > 0 ? addToMeld : undefined}
-                  onJokerClick={clickJoker} canRedeem={canRedeemJoker} />
+                  onJokerClick={clickJoker} canRedeem={canRedeemJoker}
+                  dropTarget={!!tableDrag && sideOfSeat(g, seatAt[pos]) === mySide} />
               </div>
             )}
           </div>
@@ -277,7 +342,7 @@ export default function Game({ config, onExit }) {
           <div className="center-row">
             <StockPile g={g} onClick={myTurn && r.phase === 'draw' ? () => act(() => drawFromStock(g, viewerSeat)) : undefined} />
             <DiscardSpread
-              g={g} pileSel={pileSel} takeable={takeable}
+              g={g} pileSel={pileSel} takeable={takeable} dropTarget={!!tableDrag}
               onCardClick={myTurn && r.phase === 'draw' ? (i) => setPileSel(i === pileSel ? null : i) : undefined}
             />
           </div>
@@ -286,7 +351,8 @@ export default function Game({ config, onExit }) {
         <div className="zone zone-mine">
           <MeldZone g={g} seat={viewerSeat} mine
             onMeldClick={selected.size > 0 ? addToMeld : undefined}
-            onJokerClick={clickJoker} canRedeem={canRedeemJoker} />
+            onJokerClick={clickJoker} canRedeem={canRedeemJoker}
+            dropTarget={!!tableDrag} />
         </div>
       </div>
 
@@ -306,26 +372,29 @@ export default function Game({ config, onExit }) {
               {players[viewerSeat].name} {g.nPlayers === 4 && <span className={`pair-dot pair-${mySide}`} />}
               <span className="hand-count">{handIds.length} karata</span>
             </div>
-            <div className="hand">
+            <div className="hand" ref={handRef}>
               {handIds.map((id, i) => {
                 const n = handIds.length;
-                const half = Math.max((n - 1) / 2, 1);
-                const off = i - (n - 1) / 2;
+                const mid = (n - 1) / 2;
+                const off = i - mid;
+                const half = Math.max(mid, 1);
+                const step = fanStep(n);
                 const angle = n > 1 ? (off / half) * Math.min(24, n * 2.2) : 0;
                 const droop = n > 1 ? (off / half) ** 2 * Math.min(30, n * 2.6) : 0;
                 return (
                   <div
                     key={`${g.roundNo}-${id}`}
-                    className="hand-slot"
+                    data-idx={i}
+                    className={`hand-slot ${tableDrag && tableDrag.id === id ? 'table-dragging' : ''}`}
                     style={{
-                      transform: `rotate(${angle}deg) translateY(${droop}px)`,
+                      transform: `translateX(calc(${Math.round(off * step)}px - 50%)) rotate(${angle}deg) translateY(${droop}px)`,
                       zIndex: 10 + i,
-                      animationDelay: `${Math.min(i * 35, 700)}ms`,
+                      animationDelay: `${Math.min(i * 30, 600)}ms`,
                     }}
-                    draggable
-                    onDragStart={() => { dragIdx.current = i; }}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={() => { reorderHand(dragIdx.current, i); dragIdx.current = null; }}
+                    onPointerDown={(e) => startCardDrag(e, id)}
+                    onPointerMove={moveCardDrag}
+                    onPointerUp={endCardDrag}
+                    onPointerCancel={cancelCardDrag}
                   >
                     <CardView
                       card={g.cardsById[id]} size="md"
@@ -343,6 +412,11 @@ export default function Game({ config, onExit }) {
         )}
       </div>
 
+      {tableDrag && (
+        <div className="drag-ghost" style={{ left: tableDrag.x, top: tableDrag.y }}>
+          <CardView card={g.cardsById[tableDrag.id]} size="sm" />
+        </div>
+      )}
       {toast && <div className="toast" key={toast.key}>{toast.msg}</div>}
       {binakula && <BinakulaOverlay />}
       {handoff && !summary && (
@@ -407,10 +481,10 @@ function StockPile({ g, onClick }) {
   );
 }
 
-function DiscardSpread({ g, pileSel, takeable, onCardClick }) {
+function DiscardSpread({ g, pileSel, takeable, onCardClick, dropTarget }) {
   const r = g.round;
   return (
-    <div className="discard-outer">
+    <div className={`discard-outer ${dropTarget ? 'drop-ready' : ''}`}>
       <div className="discard-label">otvoreni kup · {r.discard.length} {r.discard.length === 1 ? 'karta' : 'karata'}</div>
       <div className="discard-spread">
         {r.discard.map((id, i) => (
@@ -447,7 +521,7 @@ function PhaseBar({ phase, pending }) {
 }
 
 // Kombinacije koje je igrač izložio stoje ispred njega (po sjedalu).
-function MeldZone({ g, seat, mine, onMeldClick, onJokerClick, canRedeem }) {
+function MeldZone({ g, seat, mine, onMeldClick, onJokerClick, canRedeem, dropTarget }) {
   const melds = g.round.melds.filter((m) => m.seat === seat);
   const side = sideOfSeat(g, seat);
   return (
@@ -461,27 +535,29 @@ function MeldZone({ g, seat, mine, onMeldClick, onJokerClick, canRedeem }) {
         {melds.map((m) => (
           <MeldView key={m.id} g={g} meld={m}
             onClick={onMeldClick ? () => onMeldClick(m) : undefined}
-            onJokerClick={onJokerClick} canRedeem={canRedeem} />
+            onJokerClick={onJokerClick} canRedeem={canRedeem} dropTarget={dropTarget} />
         ))}
       </div>
     </div>
   );
 }
 
-function MeldView({ g, meld, onClick, onJokerClick, canRedeem }) {
+function MeldView({ g, meld, onClick, onJokerClick, canRedeem, dropTarget }) {
   // Engine drži karte od najniže prema najvišoj; u stupcu se slažu tako da je
   // najniža DOLJE (potpuno vidljiva), a više karte idu prema gore.
   const cards = meld.cardIds.map((id) => g.cardsById[id]).reverse();
   const sc = meldScore(cards, meld.jokerMap, meld.type);
   return (
-    <div className={`meld ${meld.type === 'binakula' ? 'meld-binakula' : ''} ${onClick ? 'meld-target' : ''}`}
+    <div
+      className={`meld ${meld.type === 'binakula' ? 'meld-binakula' : ''} ${onClick ? 'meld-target' : ''} ${dropTarget ? 'drop-ready' : ''}`}
+      data-meld-id={meld.id}
       onClick={onClick} title={onClick ? 'Dodaj odabrane karte na ovu kombinaciju' : undefined}>
       {meld.type === 'binakula' && <div className="meld-binakula-tag">BINAKULA</div>}
       <div className="meld-cards">
         {cards.map((c, i) => (
           <div key={c.id}
             className={`meld-card-slot ${c.joker && canRedeem && canRedeem(meld, c.id) ? 'redeemable' : ''}`}
-            style={{ marginTop: i ? -56 : 0 }}
+            style={{ marginTop: i ? -50 : 0 }}
             title={c.joker && canRedeem && canRedeem(meld, c.id) ? 'Imaš ovu kartu — klikni za otkup jokera!' : undefined}>
             <CardView
               card={c} size="xs" jokerAs={meld.jokerMap[c.id]}

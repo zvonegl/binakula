@@ -217,7 +217,7 @@ button { font: inherit; cursor: pointer; }
 }
 .meld-group.mine { border-color: rgba(244, 201, 93, 0.5); }
 .meld-group-label { font-size: 12px; opacity: 0.85; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-.meld-list { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+.meld-list { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
 .meld-empty { font-size: 12px; opacity: 0.5; padding: 14px 6px; }
 
 .meld { position: relative; padding: 5px 5px 2px; border-radius: 8px; background: rgba(0, 0, 0, 0.16); }
@@ -299,25 +299,41 @@ button { font: inherit; cursor: pointer; }
 .hand-wrap { margin-top: 6px; }
 .hand-owner { font-size: 13px; opacity: 0.85; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
 .hand-count { opacity: 0.7; }
-/* Ruka: karte u sredini, polukružno — kao da ih držiš u ruci. */
+/* Ruka: karte u sredini, polukružno — kao da ih držiš u ruci.
+   Pozicije su čisti transformi pa se premještanje glatko animira. */
 .hand {
-  display: flex; justify-content: center; align-items: flex-start;
-  padding: 28px 40px 6px; min-height: 156px; overflow: visible;
+  position: relative; height: 188px; overflow: visible;
 }
 .hand-slot {
-  margin-left: -48px;
+  position: absolute; left: 50%; bottom: 8px;
   transform-origin: 50% 120%;
   animation: deal-in 0.45s backwards;
-  transition: transform 0.15s;
+  transition: transform 0.18s ease;
+  touch-action: none;
+  cursor: grab;
 }
-.hand-slot:first-child { margin-left: 0; }
+.hand-slot:active { cursor: grabbing; }
 .hand-slot:hover { z-index: 60 !important; }
+.hand-slot.table-dragging { opacity: 0.35; }
 .hand .card.clickable:hover { transform: translateY(-10px); }
 .hand .card { transition: transform 0.12s, box-shadow 0.12s; }
 .hand .card.selected { transform: translateY(-20px); }
 @keyframes deal-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Karta koja se nosi na stol — prati prst/miš. */
+.drag-ghost {
+  position: fixed; z-index: 120; pointer-events: none;
+  transform: translate(-50%, -75%) rotate(-5deg);
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.55));
+}
+/* Mjesta na koja se karta smije ispustiti. */
+.meld.drop-ready { outline: 2px dashed rgba(244, 201, 93, 0.85); outline-offset: 2px; }
+.discard-outer.drop-ready .discard-spread {
+  outline: 2px dashed rgba(244, 201, 93, 0.85);
+  background: rgba(244, 201, 93, 0.12);
 }
 .spectator-note { text-align: center; padding: 24px; opacity: 0.8; }
 
@@ -400,6 +416,6 @@ button { font: inherit; cursor: pointer; }
 @media (max-width: 900px) {
   .card.md { width: 70px; height: 100px; }
   .topbar-info { display: none; }
-  .hand-slot { margin-left: -36px; }
+  .hand { height: 158px; }
   .zone-left .opp-panel, .zone-right .opp-panel { width: 150px; }
 }
