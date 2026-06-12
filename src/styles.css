@@ -96,7 +96,7 @@ button { font: inherit; cursor: pointer; }
   flex-shrink: 0;
 }
 .card.md { width: 88px; height: 126px; }
-.card.sm { width: 60px; height: 86px; border-radius: 6px; }
+.card.sm { width: 68px; height: 98px; border-radius: 6px; }
 .card.xs { width: 64px; height: 92px; border-radius: 6px; }
 .card.clickable { cursor: pointer; }
 .card.clickable:hover { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4); }
@@ -107,13 +107,13 @@ button { font: inherit; cursor: pointer; }
 .card.black { color: var(--ink); }
 .card .corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1; font-weight: 700; }
 .card.md .corner { font-size: 19px; }
-.card.sm .corner { font-size: 15px; }
+.card.sm .corner { font-size: 17px; }
 .card.xs .corner { font-size: 17px; }
 .card .corner.tl { top: 4px; left: 6px; }
 .card .corner.br { bottom: 4px; right: 6px; transform: rotate(180deg); }
 .card .pip { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .card.md .pip { font-size: 44px; }
-.card.sm .pip { font-size: 30px; }
+.card.sm .pip { font-size: 34px; }
 .card.xs .pip { font-size: 30px; }
 .card.joker .corner.red { color: var(--red); }
 .card.joker .corner.black { color: var(--ink); }
@@ -261,11 +261,11 @@ button { font: inherit; cursor: pointer; }
    oznakom; kad ih je puno, prelamaju se u novi red (bez skrola). */
 .discard-spread {
   display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
-  row-gap: 9px; padding: 8px 12px 10px;
+  row-gap: 12px; padding: 10px 14px 12px;
   background: rgba(0, 0, 0, 0.16); border-radius: 12px;
   border: 1px dashed rgba(255, 255, 255, 0.14);
 }
-.discard-slot { margin-left: -42px; transition: transform 0.12s; position: relative; }
+.discard-slot { margin-left: -38px; transition: transform 0.12s; position: relative; }
 .discard-slot:first-child { margin-left: 0; }
 .discard-slot.takeable .card { cursor: pointer; }
 .discard-slot:hover { transform: translateY(-6px); z-index: 2; }
