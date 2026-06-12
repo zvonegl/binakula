@@ -177,8 +177,10 @@ button { font: inherit; cursor: pointer; }
 .zone-left { grid-area: left; }
 .zone-top { grid-area: top; display: flex; justify-content: center; }
 .zone-right { grid-area: right; }
-.zone-center { grid-area: center; display: flex; align-items: center; min-width: 0; }
-.zone-center .center-row { width: 100%; }
+.zone-center {
+  grid-area: center; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+}
 .zone-mine { grid-area: mine; display: flex; justify-content: center; }
 .zone-left, .zone-right { display: flex; flex-direction: column; justify-content: center; }
 
@@ -244,7 +246,7 @@ button { font: inherit; cursor: pointer; }
 
 /* sredina: špil + kup */
 
-.center-row { display: flex; align-items: center; gap: 16px; padding: 4px 2px; }
+.center-row { display: flex; align-items: center; justify-content: center; gap: 22px; padding: 4px 2px; width: 100%; min-width: 0; }
 .stock { position: relative; text-align: center; }
 .clickable-stock { cursor: pointer; }
 .clickable-stock .card { box-shadow: 0 0 0 2px rgba(244, 201, 93, 0.8), 0 2px 8px rgba(0, 0, 0, 0.4); }
@@ -254,15 +256,17 @@ button { font: inherit; cursor: pointer; }
 }
 .stock-label { font-size: 11px; opacity: 0.75; margin-top: 2px; }
 
-.discard-outer { flex: 1; min-width: 0; }
-.discard-label { font-size: 11px; opacity: 0.75; margin-bottom: 3px; }
+.discard-outer { flex: 0 1 auto; min-width: 0; max-width: 100%; }
+.discard-label { font-size: 11px; opacity: 0.75; margin-bottom: 3px; text-align: center; }
+/* Kup na sredini: karte se slažu jedna preko druge, svakoj se vidi rub s
+   oznakom; kad ih je puno, prelamaju se u novi red (bez skrola). */
 .discard-spread {
-  display: flex; overflow-x: auto; padding: 6px 6px 10px;
-  background: rgba(0, 0, 0, 0.18); border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  scrollbar-width: thin;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
+  row-gap: 9px; padding: 8px 12px 10px;
+  background: rgba(0, 0, 0, 0.16); border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
 }
-.discard-slot { margin-left: -30px; transition: transform 0.12s; position: relative; }
+.discard-slot { margin-left: -36px; transition: transform 0.12s; position: relative; }
 .discard-slot:first-child { margin-left: 0; }
 .discard-slot.takeable .card { cursor: pointer; }
 .discard-slot:hover { transform: translateY(-6px); z-index: 2; }

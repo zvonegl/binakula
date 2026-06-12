@@ -268,13 +268,13 @@ export default function Game({ config, onExit }) {
         ))}
 
         <div className="zone zone-center">
+          <PhaseBar phase={r.closed ? 'done' : r.phase} pending={!!r.pendingPileCardId} />
           <div className="center-row">
             <StockPile g={g} onClick={myTurn && r.phase === 'draw' ? () => act(() => drawFromStock(g, viewerSeat)) : undefined} />
             <DiscardSpread
               g={g} pileSel={pileSel} takeable={takeable}
               onCardClick={myTurn && r.phase === 'draw' ? (i) => setPileSel(i === pileSel ? null : i) : undefined}
             />
-            <PhaseBar phase={r.closed ? 'done' : r.phase} pending={!!r.pendingPileCardId} />
           </div>
         </div>
 
@@ -404,14 +404,10 @@ function StockPile({ g, onClick }) {
 
 function DiscardSpread({ g, pileSel, takeable, onCardClick }) {
   const r = g.round;
-  const ref = useRef(null);
-  useEffect(() => {
-    if (ref.current) ref.current.scrollLeft = ref.current.scrollWidth;
-  }, [r.discard.length]);
   return (
     <div className="discard-outer">
-      <div className="discard-label">otvoreni kup ({r.discard.length})</div>
-      <div className="discard-spread" ref={ref}>
+      <div className="discard-label">otvoreni kup · {r.discard.length} {r.discard.length === 1 ? 'karta' : 'karata'}</div>
+      <div className="discard-spread">
         {r.discard.map((id, i) => (
           <div
             key={id}
