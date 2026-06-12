@@ -97,7 +97,7 @@ button { font: inherit; cursor: pointer; }
 }
 .card.md { width: 88px; height: 126px; }
 .card.sm { width: 60px; height: 86px; border-radius: 6px; }
-.card.xs { width: 58px; height: 84px; border-radius: 5px; }
+.card.xs { width: 64px; height: 92px; border-radius: 6px; }
 .card.clickable { cursor: pointer; }
 .card.clickable:hover { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4); }
 .card.selected { box-shadow: 0 0 0 3px var(--gold), 0 4px 10px rgba(0, 0, 0, 0.4); transform: translateY(-12px); }
@@ -108,13 +108,13 @@ button { font: inherit; cursor: pointer; }
 .card .corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1; font-weight: 700; }
 .card.md .corner { font-size: 19px; }
 .card.sm .corner { font-size: 15px; }
-.card.xs .corner { font-size: 16px; }
+.card.xs .corner { font-size: 17px; }
 .card .corner.tl { top: 4px; left: 6px; }
 .card .corner.br { bottom: 4px; right: 6px; transform: rotate(180deg); }
 .card .pip { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .card.md .pip { font-size: 44px; }
 .card.sm .pip { font-size: 30px; }
-.card.xs .pip { font-size: 26px; }
+.card.xs .pip { font-size: 30px; }
 .card.joker .corner.red { color: var(--red); }
 .card.joker .corner.black { color: var(--ink); }
 .joker-mini-star { position: absolute; top: 4px; right: 6px; font-size: 13px; color: #c87f0a; }
@@ -188,7 +188,7 @@ button { font: inherit; cursor: pointer; }
 .zone-left, .zone-right { display: flex; flex-direction: column; justify-content: center; }
 
 .opp-panel { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.zone-left .opp-panel, .zone-right .opp-panel { width: 226px; }
+.zone-left .opp-panel, .zone-right .opp-panel { width: 252px; }
 .zone-top .opp-panel { min-width: 280px; max-width: 60vw; }
 .opp-panel .meld-group { width: 100%; }
 .opp-panel .meld-list { justify-content: center; }
@@ -227,12 +227,8 @@ button { font: inherit; cursor: pointer; }
 .meld-cards { display: flex; flex-direction: column; align-items: center; }
 .meld-card-slot { position: relative; }
 .meld-card-slot .card { box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3); }
-/* Joker kojeg možeš otkupiti (imaš njegovu kartu u ruci) — zlatno svijetli. */
-.meld-card-slot.redeemable .card {
-  cursor: pointer;
-  box-shadow: 0 0 0 2px var(--gold), 0 0 12px rgba(244, 201, 93, 0.8);
-  animation: pulse 1.4s infinite;
-}
+/* Joker kojeg možeš otkupiti — bez isticanja (samo pokazivač i tooltip). */
+.meld-card-slot.redeemable .card { cursor: pointer; }
 .meld-score {
   text-align: center; font-size: 11px; font-weight: 700; color: var(--gold); margin-top: 2px;
 }
@@ -337,16 +333,19 @@ button { font: inherit; cursor: pointer; }
 }
 .spectator-note { text-align: center; padding: 24px; opacity: 0.8; }
 
-/* Uzete karte iz kupa — vidljive svima 10 sekundi. */
+/* Uzete karte iz kupa — vidljive svima 10 sekundi, ISPRED igrača koji ih je uzeo. */
 .take-banner {
-  position: fixed; top: 54px; left: 50%; transform: translateX(-50%);
-  z-index: 40; max-width: 92vw;
+  position: fixed; z-index: 40; max-width: 92vw;
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   background: rgba(10, 26, 16, 0.94); border: 1px solid var(--gold);
   border-radius: 12px; padding: 8px 14px;
   box-shadow: var(--shadow);
   animation: toast-in 0.25s;
 }
+.take-banner.pos-top { top: 54px; left: 50%; transform: translateX(-50%); }
+.take-banner.pos-bottom { bottom: 235px; left: 50%; transform: translateX(-50%); }
+.take-banner.pos-left { left: 14px; top: 34%; max-width: min(380px, 44vw); }
+.take-banner.pos-right { right: 14px; top: 34%; max-width: min(380px, 44vw); }
 .take-banner-text { font-size: 14px; white-space: nowrap; }
 .take-banner-cards { display: flex; flex-wrap: wrap; row-gap: 6px; }
 .take-banner-slot { position: relative; }

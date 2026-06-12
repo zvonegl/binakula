@@ -438,13 +438,17 @@ export default function Game({ config, onExit }) {
         </div>
       )}
       {lastTake && !handoff && (
-        <div className="take-banner">
+        <div className={`take-banner pos-${
+          lastTake.seat === viewerSeat ? 'bottom'
+            : seatAt.left === lastTake.seat ? 'left'
+              : seatAt.right === lastTake.seat ? 'right' : 'top'
+        }`}>
           <span className="take-banner-text">
             <b>{players[lastTake.seat].name}</b> je uzeo iz kupa ({lastTake.cardIds.length}):
           </span>
           <div className="take-banner-cards">
             {lastTake.cardIds.map((id, i) => (
-              <div key={id} className="take-banner-slot" style={{ marginLeft: i ? -38 : 0 }}>
+              <div key={id} className="take-banner-slot" style={{ marginLeft: i ? -44 : 0 }}>
                 <CardView card={g.cardsById[id]} size="xs" />
               </div>
             ))}
@@ -592,7 +596,7 @@ function MeldView({ g, meld, onClick, onJokerClick, canRedeem, dropTarget }) {
         {cards.map((c, i) => (
           <div key={c.id}
             className={`meld-card-slot ${c.joker && canRedeem && canRedeem(meld, c.id) ? 'redeemable' : ''}`}
-            style={{ marginTop: i ? -50 : 0 }}
+            style={{ marginTop: i ? -56 : 0 }}
             title={c.joker && canRedeem && canRedeem(meld, c.id) ? 'Imaš ovu kartu — klikni za otkup jokera!' : undefined}>
             <CardView
               card={c} size="xs" jokerAs={meld.jokerMap[c.id]}
