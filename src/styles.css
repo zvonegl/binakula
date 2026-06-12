@@ -95,9 +95,9 @@ button { font: inherit; cursor: pointer; }
   user-select: none;
   flex-shrink: 0;
 }
-.card.md { width: 78px; height: 112px; }
-.card.sm { width: 54px; height: 78px; border-radius: 6px; }
-.card.xs { width: 50px; height: 72px; border-radius: 5px; }
+.card.md { width: 88px; height: 126px; }
+.card.sm { width: 60px; height: 86px; border-radius: 6px; }
+.card.xs { width: 58px; height: 84px; border-radius: 5px; }
 .card.clickable { cursor: pointer; }
 .card.clickable:hover { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4); }
 .card.selected { box-shadow: 0 0 0 3px var(--gold), 0 4px 10px rgba(0, 0, 0, 0.4); transform: translateY(-12px); }
@@ -106,15 +106,18 @@ button { font: inherit; cursor: pointer; }
 .card.red { color: var(--red); }
 .card.black { color: var(--ink); }
 .card .corner { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1; font-weight: 700; }
-.card.md .corner { font-size: 17px; }
-.card.sm .corner { font-size: 13px; }
-.card.xs .corner { font-size: 14px; }
-.card .corner.tl { top: 4px; left: 5px; }
-.card .corner.br { bottom: 4px; right: 5px; transform: rotate(180deg); }
+.card.md .corner { font-size: 19px; }
+.card.sm .corner { font-size: 15px; }
+.card.xs .corner { font-size: 16px; }
+.card .corner.tl { top: 4px; left: 6px; }
+.card .corner.br { bottom: 4px; right: 6px; transform: rotate(180deg); }
 .card .pip { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-.card.md .pip { font-size: 38px; }
-.card.sm .pip { font-size: 26px; }
-.card.xs .pip { font-size: 22px; }
+.card.md .pip { font-size: 44px; }
+.card.sm .pip { font-size: 30px; }
+.card.xs .pip { font-size: 26px; }
+.card.joker .corner.red { color: var(--red); }
+.card.joker .corner.black { color: var(--ink); }
+.joker-mini-star { position: absolute; top: 4px; right: 6px; font-size: 13px; color: #c87f0a; }
 
 .card.back {
   background: repeating-linear-gradient(45deg, #27518f 0 6px, #1d3f72 6px 12px);
@@ -251,7 +254,7 @@ button { font: inherit; cursor: pointer; }
 .clickable-stock { cursor: pointer; }
 .clickable-stock .card { box-shadow: 0 0 0 2px rgba(244, 201, 93, 0.8), 0 2px 8px rgba(0, 0, 0, 0.4); }
 .stock-count {
-  position: absolute; top: 44px; left: 0; right: 0;
+  position: absolute; top: 50px; left: 0; right: 0;
   font-weight: 800; font-size: 17px; text-shadow: 0 1px 3px #000;
 }
 .stock-label { font-size: 11px; opacity: 0.75; margin-top: 2px; }
@@ -266,7 +269,7 @@ button { font: inherit; cursor: pointer; }
   background: rgba(0, 0, 0, 0.16); border-radius: 12px;
   border: 1px dashed rgba(255, 255, 255, 0.14);
 }
-.discard-slot { margin-left: -36px; transition: transform 0.12s; position: relative; }
+.discard-slot { margin-left: -42px; transition: transform 0.12s; position: relative; }
 .discard-slot:first-child { margin-left: 0; }
 .discard-slot.takeable .card { cursor: pointer; }
 .discard-slot:hover { transform: translateY(-6px); z-index: 2; }
@@ -302,7 +305,7 @@ button { font: inherit; cursor: pointer; }
   padding: 28px 40px 6px; min-height: 156px; overflow: visible;
 }
 .hand-slot {
-  margin-left: -42px;
+  margin-left: -48px;
   transform-origin: 50% 120%;
   animation: deal-in 0.45s backwards;
   transition: transform 0.15s;
@@ -395,8 +398,8 @@ button { font: inherit; cursor: pointer; }
 }
 
 @media (max-width: 900px) {
-  .card.md { width: 62px; height: 90px; }
+  .card.md { width: 70px; height: 100px; }
   .topbar-info { display: none; }
-  .hand-slot { margin-left: -30px; }
+  .hand-slot { margin-left: -36px; }
   .zone-left .opp-panel, .zone-right .opp-panel { width: 150px; }
 }

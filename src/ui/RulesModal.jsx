@@ -13,7 +13,9 @@ export default function RulesModal({ onClose }) {
           <p>Igra se sa 108 karata: dva špila od 52 karte + 4 jokera (svaka karta postoji u dvije kopije).
             Svaki igrač dobiva 19 karata; jedna karta otvara kup za odbacivanje, ostatak je zatvoreni špil.
             U igri za 4 igra se 2 na 2 — partneri sjede nasuprot, dijele rezultat i smiju dodavati na
-            partnerove kombinacije.</p>
+            partnerove kombinacije. Prvi djelitelj bira se nasumično i dijeli počevši od igrača sa
+            svoje desne strane; kad dijeljenje obiđe pun krug i vrati se na njega, smjer se mijenja
+            ulijevo (i tako naizmjence).</p>
 
           <h3>Potez</h3>
           <ol>

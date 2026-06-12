@@ -19,12 +19,21 @@ export default function CardView({
 
   if (card.joker) {
     cls.push('joker');
+    const asRed = jokerAs && RED_SUITS.has(jokerAs.suit);
     return (
       <div className={cls.join(' ')} style={style} onClick={onClick} {...dragProps}>
+        {jokerAs && (
+          // Kut s kartom koju joker predstavlja — vidljiv i kad je karta u stogu.
+          <div className={`corner tl ${asRed ? 'red' : 'black'}`}>
+            <span>{RANK_LABELS[jokerAs.rank]}</span>
+            <span>{SUIT_SYMBOLS[jokerAs.suit]}</span>
+          </div>
+        )}
+        {jokerAs && <div className="joker-mini-star">★</div>}
         <div className="joker-star">★</div>
         <div className="joker-word">JOKER</div>
         {jokerAs && (
-          <div className={`joker-as ${RED_SUITS.has(jokerAs.suit) ? 'red' : 'black'}`}>
+          <div className={`joker-as ${asRed ? 'red' : 'black'}`}>
             = {SUIT_SYMBOLS[jokerAs.suit]}{RANK_LABELS[jokerAs.rank]}
           </div>
         )}

@@ -93,6 +93,9 @@ na jednom mjestu pa ih je lako promijeniti):
 7. **Kad se špil potroši**, otvoreni kup osim gornje karte se promiješa u novi zatvoreni špil
    (deterministički, istim RNG-om partije).
 8. U 4 igrača **parovi su mjesta 1+3 i 2+4** (nasuprot); kombinacije i bodovi vode se po paru.
+9. **Smjer igre**: prvi djelitelj bira se nasumično (deterministički iz seeda) i dijeli počevši
+   od igrača sa svoje desne strane; igra teče udesno. Kad dijeljenje obiđe pun krug i vrati se
+   na prvog djelitelja, smjer se mijenja ulijevo — i tako naizmjence svaki puni krug.
 
 ## Botovi
 

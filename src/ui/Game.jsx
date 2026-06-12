@@ -37,6 +37,7 @@ export default function Game({ config, onExit }) {
   const [rulesOpen, setRulesOpen] = useState(false);
   const [scoreOpen, setScoreOpen] = useState(false);
   const [jokerDialog, setJokerDialog] = useState(null);
+  const [sortPref, setSortPref] = useState({ by: null, dir: 1 });
 
   const r = g.round;
   const mySide = sideOfSeat(g, viewerSeat);
@@ -189,7 +190,10 @@ export default function Game({ config, onExit }) {
     return !!engineCanRedeem(g, viewerSeat, meld.id, jokerId);
   }
 
+  // Ponovni klik na isti gumb okreće smjer: najniže slijeva ili zdesna.
   function sortHand(by) {
+    const dir = sortPref.by === by ? -sortPref.dir : 1;
+    setSortPref({ by, dir });
     const hand = r.hands[viewerSeat];
     const key = (id) => {
       const c = g.cardsById[id];
@@ -200,6 +204,7 @@ export default function Game({ config, onExit }) {
       const [a1, a2] = key(a); const [b1, b2] = key(b);
       return a1 - b1 || a2 - b2;
     });
+    if (dir === -1) hand.reverse();
     bump();
   }
 
@@ -244,7 +249,7 @@ export default function Game({ config, onExit }) {
       <header className="topbar">
         <div className="topbar-title">♠ Binakula</div>
         <div className="topbar-info">
-          Krug {g.roundNo} · Cilj {g.config.target} · Na potezu: <b>{turnName}</b>
+          Krug {g.roundNo} · Cilj {g.config.target} · Smjer: {g.direction === -1 ? 'udesno ↻' : 'ulijevo ↺'} · Na potezu: <b>{turnName}</b>
         </div>
         <div className="topbar-btns">
           <button className="btn ghost" onClick={() => setScoreOpen(true)}>Semafor</button>
@@ -287,7 +292,7 @@ export default function Game({ config, onExit }) {
 
       <div className="bottom-area">
         <ActionBar
-          g={g} myTurn={myTurn} viewerSeat={viewerSeat} selected={selected} pileSel={pileSel}
+          g={g} myTurn={myTurn} viewerSeat={viewerSeat} selected={selected} pileSel={pileSel} sortPref={sortPref}
           onConfirmTake={confirmTake} onCancelTake={() => setPileSel(null)}
           onMeld={meldSelected}
           onDiscard={() => act(() => discard(g, viewerSeat, [...selected][0]))}
@@ -476,7 +481,7 @@ function MeldView({ g, meld, onClick, onJokerClick, canRedeem }) {
         {cards.map((c, i) => (
           <div key={c.id}
             className={`meld-card-slot ${c.joker && canRedeem && canRedeem(meld, c.id) ? 'redeemable' : ''}`}
-            style={{ marginTop: i ? -48 : 0 }}
+            style={{ marginTop: i ? -56 : 0 }}
             title={c.joker && canRedeem && canRedeem(meld, c.id) ? 'Imaš ovu kartu — klikni za otkup jokera!' : undefined}>
             <CardView
               card={c} size="xs" jokerAs={meld.jokerMap[c.id]}
@@ -494,16 +499,18 @@ function MeldView({ g, meld, onClick, onJokerClick, canRedeem }) {
   );
 }
 
-function ActionBar({ g, myTurn, viewerSeat, selected, pileSel, onConfirmTake, onCancelTake, onMeld, onDiscard, onClose, onUndoTake, onSort }) {
+function ActionBar({ g, myTurn, viewerSeat, selected, pileSel, sortPref, onConfirmTake, onCancelTake, onMeld, onDiscard, onClose, onUndoTake, onSort }) {
   const r = g.round;
+  const arrow = (by) => (sortPref.by === by ? (sortPref.dir === 1 ? ' ⟶' : ' ⟵') : ' ⇄');
+  const sortTitle = 'Najniže slijeva — ponovni klik slaže zdesna';
   if (!r || r.closed) return <div className="action-bar" />;
   if (!myTurn) {
     return (
       <div className="action-bar">
         <span className="action-hint">Na potezu: <b>{g.config.players[r.turn].name}</b>…</span>
         <span className="action-spacer" />
-        <button className="btn ghost sm" onClick={() => onSort('suit')}>Sortiraj ♠♥</button>
-        <button className="btn ghost sm" onClick={() => onSort('rank')}>Sortiraj 123</button>
+        <button className="btn ghost sm" title={sortTitle} onClick={() => onSort('suit')}>Sortiraj ♠♥{arrow('suit')}</button>
+        <button className="btn ghost sm" title={sortTitle} onClick={() => onSort('rank')}>Sortiraj 123{arrow('rank')}</button>
       </div>
     );
   }
@@ -544,8 +551,8 @@ function ActionBar({ g, myTurn, viewerSeat, selected, pileSel, onConfirmTake, on
         </>
       )}
       <span className="action-spacer" />
-      <button className="btn ghost sm" onClick={() => onSort('suit')}>Sortiraj ♠♥</button>
-      <button className="btn ghost sm" onClick={() => onSort('rank')}>Sortiraj 123</button>
+      <button className="btn ghost sm" title={sortTitle} onClick={() => onSort('suit')}>Sortiraj ♠♥{arrow('suit')}</button>
+      <button className="btn ghost sm" title={sortTitle} onClick={() => onSort('rank')}>Sortiraj 123{arrow('rank')}</button>
     </div>
   );
 }

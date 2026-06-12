@@ -36,7 +36,9 @@ export function createGame(config) {
     nSides,
     cardsById,
     rng: mulberry32(seed),
-    dealer: n - 2, // startRound rotira djelitelja, pa u 1. krugu prvi poteže igrač 0
+    dealer: null,       // bira se nasumično u prvom krugu
+    firstDealer: null,
+    direction: -1,      // -1 = udesno (od djelitelja), +1 = ulijevo
     roundNo: 0,
     round: null,
     scores: [],            // po krugu: { perSide: [..], closerSeat }
@@ -59,16 +61,28 @@ export function seatsOfSide(state, side) {
 export function startRound(state) {
   if (state.gameOver) throw new GameError('Partija je završena.');
   state.roundNo += 1;
-  state.dealer = (state.dealer + 1) % state.nPlayers;
+  const n = state.nPlayers;
+
+  // Djelitelj: u 1. krugu nasumičan; dalje se dijeljenje seli u smjeru igre.
+  // Počinje se dijeliti sa djeliteljeve DESNE strane; kad dijeljenje obiđe
+  // pun krug i vrati se na prvog djelitelja, smjer se mijenja (ulijevo).
+  if (state.roundNo === 1) {
+    state.firstDealer = Math.floor(state.rng() * n);
+    state.dealer = state.firstDealer;
+    state.direction = -1;
+  } else {
+    state.dealer = (state.dealer + state.direction + n) % n;
+    if (state.dealer === state.firstDealer) state.direction = -state.direction;
+  }
 
   const ids = Object.keys(state.cardsById);
   shuffle(ids, state.rng);
 
-  const hands = Array.from({ length: state.nPlayers }, () => []);
-  // Dijeli se jedna po jedna, počevši od igrača lijevo od djelitelja.
+  const hands = Array.from({ length: n }, () => []);
+  // Dijeli se jedna po jedna, počevši od igrača do djelitelja u smjeru igre.
   let deal = 0;
-  for (let k = 0; k < 19 * state.nPlayers; k++) {
-    const seat = (state.dealer + 1 + (k % state.nPlayers)) % state.nPlayers;
+  for (let k = 0; k < 19 * n; k++) {
+    const seat = (state.dealer + state.direction * (1 + (k % n)) + 4 * n) % n;
     hands[seat].push(ids[deal++]);
   }
   const upcard = ids[deal++];
@@ -80,7 +94,7 @@ export function startRound(state) {
     hands,
     melds: [],                    // { id, side, cardIds, jokerMap, type }
     nextMeldId: 1,
-    turn: (state.dealer + 1) % state.nPlayers,
+    turn: (state.dealer + state.direction + n) % n,
     turnCount: 0,
     phase: 'draw',                // 'draw' → 'meld' (izlaganje + odbacivanje)
     pendingPileCardId: null,      // najdonja uzeta karta koju treba izložiti
@@ -395,7 +409,7 @@ export function discard(state, seat, cardId) {
   removeFromHand(state, seat, [cardId]);
   r.discard.push(cardId);
   r.takeSnapshot = null;
-  r.turn = (seat + 1) % state.nPlayers;
+  r.turn = (seat + state.direction + state.nPlayers) % state.nPlayers;
   r.turnCount += 1;
   r.phase = 'draw';
   return { type: 'discard', cardId, nextTurn: r.turn };

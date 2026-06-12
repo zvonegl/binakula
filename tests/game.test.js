@@ -39,6 +39,21 @@ describe('dijeljenje', () => {
     }
   });
 
+  it('djelitelj je nasumičan; dijeli se udesno, a nakon punog kruga ulijevo', () => {
+    const g = game(3, 7);
+    const d0 = g.dealer;
+    expect(g.direction).toBe(-1);
+    expect(g.round.turn).toBe((d0 + 2) % 3); // prvi poteže igrač djelitelju zdesna
+    startRound(g);
+    expect(g.dealer).toBe((d0 + 2) % 3);     // dijeljenje se seli udesno
+    startRound(g);
+    expect(g.dealer).toBe((d0 + 1) % 3);
+    startRound(g); // dijeljenje se vratilo prvom djelitelju → smjer ide ulijevo
+    expect(g.dealer).toBe(d0);
+    expect(g.direction).toBe(1);
+    expect(g.round.turn).toBe((d0 + 1) % 3);
+  });
+
   it('isti seed daje isto dijeljenje (determinizam)', () => {
     const a = game(3, 123);
     const b = game(3, 123);
