@@ -119,8 +119,8 @@ export default function Game({ config, onExit }) {
     return r.discard.map((_, i) => !!canTakeAt(g, viewerSeat, i));
   }, [version, myTurn, viewerSeat]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function toggleSelect(id) {
-    if (suppressClick.current) { suppressClick.current = false; return; }
+  function toggleSelect(id, fromPointer = false) {
+    if (!fromPointer && suppressClick.current) return;
     if (!myTurn) return;
     setSelected((s) => {
       const n = new Set(s);
@@ -231,9 +231,8 @@ export default function Game({ config, onExit }) {
     const dy = e.clientY - d.startY;
     if (!d.mode) {
       if (dy < -42 && myTurn && r.phase === 'meld') d.mode = 'table';
-      else if (Math.abs(dx) > 10) d.mode = 'reorder';
+      else if (Math.abs(dx) > 12) d.mode = 'reorder';
       else return;
-      suppressClick.current = true;
     }
     if (d.mode === 'reorder') {
       const hand = r.hands[viewerSeat];
@@ -256,6 +255,14 @@ export default function Game({ config, onExit }) {
     const d = dragInfo.current;
     dragInfo.current = null;
     if (!d) return;
+    // Zbog hvatanja pokazivača browser klik preusmjeri na držač karte,
+    // pa odabir odrađujemo ovdje, a naknadni klik potiskujemo.
+    suppressClick.current = true;
+    setTimeout(() => { suppressClick.current = false; }, 80);
+    if (!d.mode) {
+      toggleSelect(d.id, true);
+      return;
+    }
     if (d.mode === 'table') {
       setTableDrag(null);
       const el = document.elementFromPoint(e.clientX, e.clientY);
