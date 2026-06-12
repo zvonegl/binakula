@@ -38,6 +38,8 @@ export default function Game({ config, onExit }) {
   const [scoreOpen, setScoreOpen] = useState(false);
   const [jokerDialog, setJokerDialog] = useState(null);
   const [sortPref, setSortPref] = useState({ by: null, dir: 1 });
+  const [lastTake, setLastTake] = useState(null); // {seat, cardIds} — vidljivo 10 s
+  const takeTimer = useRef(null);
 
   const r = g.round;
   const mySide = sideOfSeat(g, viewerSeat);
@@ -56,6 +58,17 @@ export default function Game({ config, onExit }) {
 
   function afterEvent(ev) {
     if (!ev) return;
+    // Uzete karte iz kupa ostaju vidljive 10 sekundi — da ih svi (posebno
+    // partner) stignu zapamtiti, npr. za kasnije igranje jokera na tu kartu.
+    if (ev.type === 'take') {
+      setLastTake({ seat: ev.seat, cardIds: ev.takenIds });
+      clearTimeout(takeTimer.current);
+      takeTimer.current = setTimeout(() => setLastTake(null), 10000);
+    }
+    if (ev.type === 'undoTake') {
+      setLastTake(null);
+      clearTimeout(takeTimer.current);
+    }
     let extraDelay = 0;
     if (ev.binakula) {
       setBinakula(true);
@@ -424,6 +437,21 @@ export default function Game({ config, onExit }) {
           <CardView card={g.cardsById[tableDrag.id]} size="sm" />
         </div>
       )}
+      {lastTake && !handoff && (
+        <div className="take-banner">
+          <span className="take-banner-text">
+            <b>{players[lastTake.seat].name}</b> je uzeo iz kupa ({lastTake.cardIds.length}):
+          </span>
+          <div className="take-banner-cards">
+            {lastTake.cardIds.map((id, i) => (
+              <div key={id} className="take-banner-slot" style={{ marginLeft: i ? -38 : 0 }}>
+                <CardView card={g.cardsById[id]} size="xs" />
+              </div>
+            ))}
+          </div>
+          <button className="btn ghost sm" onClick={() => setLastTake(null)}>✕</button>
+        </div>
+      )}
       {toast && <div className="toast" key={toast.key}>{toast.msg}</div>}
       {binakula && <BinakulaOverlay />}
       {handoff && !summary && (
@@ -686,7 +714,9 @@ function RoundSummary({ g, result, onNext, onExit }) {
           </thead>
           <tbody>
             <tr><td>Izloženo</td>{sides.map((s) => <td key={s}>+{result.meldPts[s]}</td>)}</tr>
-            <tr><td>Ostalo u ruci</td>{sides.map((s) => <td key={s}>−{result.handPts[s]}</td>)}</tr>
+            <tr><td>Ostalo u ruci</td>{sides.map((s) => (
+              <td key={s}>{s === result.closerSide ? '— (izašli)' : `−${result.handPts[s]}`}</td>
+            ))}</tr>
             <tr><td>Bonus izlaska</td>{sides.map((s) => <td key={s}>{s === result.closerSide ? '+100' : '—'}</td>)}</tr>
             <tr className="summary-round"><td>Krug</td>{sides.map((s) => <td key={s}><b>{result.perSide[s]}</b></td>)}</tr>
           </tbody>

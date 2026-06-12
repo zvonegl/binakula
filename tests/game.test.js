@@ -303,7 +303,7 @@ describe('zatvaranje kruga i bodovanje', () => {
     expect(ev.result.perSide).toEqual([130, -55]); // 30+100 ; −(15+30+10)
   });
 
-  it('u igri 2 na 2 partneri dijele rezultat (kombinacije + obje ruke)', () => {
+  it('u igri 2 na 2: pobjedničkom paru se partnerova ruka NE oduzima', () => {
     const g = game(4);
     setRound(g, {
       hands: [['H2_0'], ['D5_0'], ['C13_0', 'C13_1'], ['S2_1']],
@@ -316,9 +316,9 @@ describe('zatvaranje kruga i bodovanje', () => {
       phase: 'meld',
     });
     const ev = closeRound(g, 0, 'H2_0');
-    // Strana 0: 30 + 15 − partnerova ruka (20) + 100 = 125
-    // Strana 1: 30 − (5 + 5) = 20
-    expect(ev.result.perSide).toEqual([125, 20]);
+    // Strana 0 (izašla): 30 + 15 + 100 = 145 — partnerova ruka se NE odbija.
+    // Strana 1 (izgubila): 30 − (5 + 5) = 20.
+    expect(ev.result.perSide).toEqual([145, 20]);
   });
 
   it('ne može se zatvoriti s više od jedne karte ni odbaciti zadnja karta', () => {
@@ -329,16 +329,17 @@ describe('zatvaranje kruga i bodovanje', () => {
     expect(() => discard(g, 0, 'H2_0')).toThrow(/zatvaraš/i);
   });
 
-  it('partija završava kad strana dosegne cilj', () => {
+  it('partija završava kad strana dosegne cilj (2000)', () => {
     const g = game(2);
-    g.totals = [1400, 0];
+    expect(g.config.target).toBe(2000);
+    g.totals = [1900, 0];
     setRound(g, {
       hands: [['H2_0'], ['D4_0']],
       melds: [{ side: 0, cardIds: ['S7_0', 'S8_0', 'S9_0'], type: 'run' }],
       stock: ['C2_0'],
       phase: 'meld',
     });
-    closeRound(g, 0, 'H2_0'); // 1400 + 130 ≥ 1500
+    closeRound(g, 0, 'H2_0'); // 1900 + 130 ≥ 2000
     expect(g.gameOver).toBe(true);
     expect(g.winnerSide).toBe(0);
   });

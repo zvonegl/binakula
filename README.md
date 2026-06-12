@@ -64,7 +64,11 @@ bot-protiv-bota (sve veličine stola i težine) uz provjeru invarijanti (108 kar
 - Izlazak: sve osim jedne karte izloženo, zadnja karta ide licem dolje na zatvoreni špil.
 - Bodovi: joker 3 · as 1,5 · 2–6 pola boda · 7–K 1 bod; izloženo plus, ruka minus;
   čiste kombinacije od 6+ karata i čisti tris 4 karte u 4 boje duplo; bonus izlaska 10.
-- Cilj (×10 zapis): 1500 (2 igrača) / 2000 (3) / 3000 (4, po paru).
+  Strana koja je izašla ne odbija karte iz ruke (u paru se partnerova ruka ne računa
+  u minus) — minus ide samo gubitnicima.
+- Cilj (×10 zapis): 2000, neovisno o broju igrača; podesivo u lobbyju.
+- Uzimanje iz kupa svima je vidljivo još 10 sekundi (panel s uzetim kartama) — partner
+  i protivnici stignu zapamtiti karte, npr. za kasnije igranje jokera.
 
 ## Odluke o interpretaciji pravila
 

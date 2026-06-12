@@ -50,7 +50,9 @@ export default function RulesModal({ onClose }) {
           <h3>Bodovanje</h3>
           <ul>
             <li>Joker = 3 boda · As = 1,5 · 2–6 = 0,5 · 7–K = 1 bod.</li>
-            <li>Izloženo = plus; ostalo u ruci = minus (možeš završiti krug u minusu).</li>
+            <li>Izloženo = plus; ostalo u ruci = minus (možeš završiti krug u minusu).
+              Strana koja je izašla NE odbija karte iz ruke — u paru se partnerove
+              preostale karte ne računaju u minus; minus ide samo gubitnicima.</li>
             <li><b>Duplo</b>: kombinacija od 6+ karata i tris od 4 karte u 4 različite boje —
               ali samo „čiste” kombinacije: s jokerom nema dupliranja.</li>
             <li>Tko zatvori krug dobiva bonus 10 bodova.</li>
@@ -58,7 +60,7 @@ export default function RulesModal({ onClose }) {
           </ul>
 
           <h3>Cilj</h3>
-          <p>Bodovi se zbrajaju kroz krugove: 2 igrača do 1500, 3 igrača do 2000, parovi do 3000 (×10 zapis).</p>
+          <p>Bodovi se zbrajaju kroz krugove — igra se do <b>2000</b> (×10 zapis); cilj je podesiv prije partije.</p>
         </div>
       </div>
     </div>

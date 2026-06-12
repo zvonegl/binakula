@@ -11,7 +11,7 @@ import { findMeldPlanForCard } from './plans.js';
 
 export class GameError extends Error {}
 
-const DEFAULT_TARGETS = { 2: 1500, 3: 2000, 4: 3000 };
+const DEFAULT_TARGETS = { 2: 2000, 3: 2000, 4: 2000 };
 
 // ---------------------------------------------------------------------------
 // Stvaranje partije i kruga
@@ -217,7 +217,7 @@ export function takeFromDiscard(state, seat, index) {
   for (const id of takenIds) r.publicKnown[seat].add(id);
   r.pendingPileCardId = takenIds[0];
   r.phase = 'meld';
-  return { type: 'take', takenIds, plan };
+  return { type: 'take', seat, takenIds, plan };
 }
 
 function snapshotRound(r) {
@@ -462,8 +462,9 @@ export function scoreRound(state) {
   const perSide = [];
   const closerSide = sideOfSeat(state, r.closerSeat);
   for (let side = 0; side < n; side++) {
-    let pts = meldPts[side] - handPts[side];
-    if (side === closerSide) pts += 100; // bonus za izlazak: 10 bodova
+    // Pobjednička strana ne odbija karte iz ruke: izlaskom igrača njegov
+    // partner ne gubi bodove za ono što mu je ostalo — minus ide samo gubitnicima.
+    let pts = side === closerSide ? meldPts[side] + 100 : meldPts[side] - handPts[side];
     perSide.push(pts);
   }
   const result = {

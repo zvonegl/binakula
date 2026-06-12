@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { seedFromString } from '../engine/rng.js';
 
-const DEFAULT_TARGETS = { 2: 1500, 3: 2000, 4: 3000 };
+const DEFAULT_TARGETS = { 2: 2000, 3: 2000, 4: 2000 };
 const PAIR_OF_SEAT = ['Par 1', 'Par 2', 'Par 1', 'Par 2'];
 
 export default function Lobby({ onStart }) {
