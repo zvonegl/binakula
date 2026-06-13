@@ -1,0 +1,11 @@
+# Render "Blueprint" — jednim klikom postavi online server za Binakulu.
+# Na renderu: New + → Blueprint → poveži repo zvonegl/binakula.
+services:
+  - type: web
+    name: binakula-server
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/index.mjs
+    healthCheckPath: /
+    autoDeploy: true
