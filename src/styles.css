@@ -26,6 +26,11 @@ body { overflow: hidden; }  /* igra fita ekran — nema skrolanja stranice */
   --th: clamp(42px, 9.6vh, 92px);
   --ch: clamp(58px, 12.5vh, 112px);  /* špil + kup na sredini — malo veće */
 }
+/* Niski ekrani (široki ali niski monitori): manje karte da sve stane bez
+   preklapanja, uz zadržanu vidljivost ruke. */
+@media (max-height: 760px) {
+  :root { --mh: clamp(44px, 11vh, 82px); --th: clamp(33px, 7.4vh, 58px); --ch: clamp(46px, 9.5vh, 84px); }
+}
 @media (max-width: 560px) {
   :root { --mh: clamp(50px, 11vh, 90px); --th: clamp(34px, 7vh, 60px); --ch: clamp(48px, 10vh, 82px); }
   .zone-left .opp-panel, .zone-right .opp-panel { width: clamp(100px, 27vw, 150px); }
@@ -200,7 +205,9 @@ button { font: inherit; cursor: pointer; }
   flex: 1; min-height: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-rows: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+  /* Gornja i donja zona dijele preostalu visinu (omeđene), sredina (špil/kup)
+     uzima samo koliko treba. Tako sve uvijek stane i na niskim ekranima. */
+  grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
   grid-template-areas:
     "left top    right"
     "left center right"
@@ -223,13 +230,13 @@ button { font: inherit; cursor: pointer; }
    Sve zone smiju se skupiti (min-height/width:0); kombinacije po potrebi
    scrollaju unutar svoje zone, a ne cijela stranica. */
 .zone-left { grid-area: left; }
-.zone-top { grid-area: top; display: flex; justify-content: center; }
+.zone-top { grid-area: top; display: flex; justify-content: center; align-items: center; overflow: hidden; }
 .zone-right { grid-area: right; }
 .zone-center {
   grid-area: center; min-width: 0; min-height: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
 }
-.zone-mine { grid-area: mine; display: flex; justify-content: center; min-height: 0; }
+.zone-mine { grid-area: mine; display: flex; justify-content: center; align-items: center; min-height: 0; overflow: hidden; }
 .zone-left, .zone-right { display: flex; flex-direction: column; justify-content: center; min-height: 0; }
 .zone-top, .zone-mine { min-height: 0; }
 
@@ -240,7 +247,7 @@ button { font: inherit; cursor: pointer; }
 .opp-panel .meld-list { justify-content: center; }
 /* Zadnja linija obrane: ako kombinacija ima jako puno karata, scroll je u zoni. */
 .meld-group { min-height: 0; }
-.meld-list { overflow: auto; max-height: 100%; scrollbar-width: thin; }
+.meld-list { overflow: auto; min-height: 0; max-height: 100%; scrollbar-width: thin; }
 .seat-chip {
   display: flex; align-items: center; gap: 8px;
   background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.18);
@@ -263,6 +270,7 @@ button { font: inherit; cursor: pointer; }
 .meld-group {
   background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px; padding: 6px 10px; max-width: 95vw;
+  display: flex; flex-direction: column; min-height: 0; max-height: 100%;
 }
 .meld-group.mine { border-color: rgba(244, 201, 93, 0.5); }
 .meld-group-label { font-size: 12px; opacity: 0.85; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
