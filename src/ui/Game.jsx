@@ -51,7 +51,20 @@ export default function Game({ config, onExit, online = null }) {
   // Online: sažetak kruga proizlazi iz stanja (krug zatvoren) jer ga svi vide.
   const summaryOpen = summary || (isOnline && r && r.closed);
   const myTurn = r && !r.closed && r.turn === viewerSeat && viewerIsHuman && !handoff && !summaryOpen;
-  const handIds = r ? r.hands[viewerSeat] : [];
+
+  // Stabilan redoslijed ruke: pamtimo igračev raspored i zadržavamo ga kroz
+  // ažuriranja (online stanje stiže iznova svaki potez). Nove karte (izvučene)
+  // idu na kraj; odigrane se uklanjaju. Bez ovoga bi se ruka prividno "miješala".
+  const handOrderRef = useRef([]);
+  function orderedHand(raw) {
+    const present = new Set(raw);
+    const order = handOrderRef.current.filter((id) => present.has(id));
+    const known = new Set(order);
+    for (const id of raw) if (!known.has(id)) order.push(id);
+    handOrderRef.current = order;
+    return order;
+  }
+  const handIds = r ? orderedHand(r.hands[viewerSeat]) : [];
 
   function showToast(msg) {
     setToast({ msg, key: Date.now() });
@@ -240,17 +253,17 @@ export default function Game({ config, onExit, online = null }) {
   function sortHand(by) {
     const dir = sortPref.by === by ? -sortPref.dir : 1;
     setSortPref({ by, dir });
-    const hand = r.hands[viewerSeat];
     const key = (id) => {
       const c = g.cardsById[id];
       if (c.joker) return [9, 99];
       return by === 'suit' ? [SUIT_ORDER[c.suit], c.rank] : [c.rank, SUIT_ORDER[c.suit]];
     };
-    hand.sort((a, b) => {
+    const sorted = [...handIds].sort((a, b) => {
       const [a1, a2] = key(a); const [b1, b2] = key(b);
       return a1 - b1 || a2 - b2;
     });
-    if (dir === -1) hand.reverse();
+    if (dir === -1) sorted.reverse();
+    handOrderRef.current = sorted;
     bump();
   }
 
@@ -280,13 +293,13 @@ export default function Game({ config, onExit, online = null }) {
       else return;
     }
     if (d.mode === 'reorder') {
-      const hand = r.hands[viewerSeat];
+      const hand = handOrderRef.current;
       const n = hand.length;
       const rect = handRef.current.getBoundingClientRect();
       const rel = (e.clientX - (rect.left + rect.width / 2)) / fanStep(n) + (n - 1) / 2;
       const to = Math.max(0, Math.min(n - 1, Math.round(rel)));
       const from = hand.indexOf(d.id);
-      if (to !== from) {
+      if (from !== -1 && to !== from) {
         hand.splice(from, 1);
         hand.splice(to, 0, d.id);
         bump();
