@@ -279,11 +279,20 @@ button { font: inherit; cursor: pointer; }
    jače stišnuto, pa kombinacija nikad ne naraste preko mjere. */
 .meld-card-slot:not(:first-child) { margin-top: calc(var(--th) * var(--ov, 0.6) * -1); }
 .meld-card-slot .card { box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3); }
-/* Bočni igrači (lijevo/desno): kombinacija ide VODORAVNO uz rub stola —
-   karte u redu, svakoj se vidi lijevi rub s oznakom. */
-.meld-horizontal .meld-cards { flex-direction: row; }
+/* Bočni igrači (lijevo/desno): kombinacija leži VODORAVNO uz rub stola, a svaka
+   je karta zarotirana 90° prema tom igraču (kao za pravim stolom). Slot ima
+   footprint zarotirane karte (širok = visina karte), karta je u njemu centrirana
+   i zarotirana. */
+.meld-horizontal .meld-cards { flex-direction: row; align-items: center; }
+.meld-horizontal .meld-card-slot {
+  width: var(--th); height: calc(var(--th) * 0.715);
+}
 .meld-horizontal .meld-card-slot:not(:first-child) { margin-top: 0; margin-left: calc(var(--th) * var(--ov, 0.5) * -1); }
-.meld-horizontal .meld-card-slot .card { box-shadow: -1px 0 3px rgba(0, 0, 0, 0.3); }
+.meld-horizontal .meld-card-slot .card {
+  position: absolute; top: 50%; left: 50%;
+}
+.meld-rot-left .meld-card-slot .card { transform: translate(-50%, -50%) rotate(-90deg); box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3); }
+.meld-rot-right .meld-card-slot .card { transform: translate(-50%, -50%) rotate(90deg); box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3); }
 /* Joker kojeg možeš otkupiti — bez isticanja (samo pokazivač i tooltip). */
 .meld-card-slot.redeemable .card { cursor: pointer; }
 .meld-score {
