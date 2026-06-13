@@ -212,7 +212,10 @@ button { font: inherit; cursor: pointer; }
     "left top    right"
     "left center right"
     "left mine   right";
-  margin: clamp(4px, 1.2vh, 10px) clamp(6px, 1.2vw, 14px) clamp(2px, 0.6vh, 4px);
+  /* Stol je centriran i omeđen po širini prema broju igrača: za 2 igrača uži
+     (uredan stol umjesto pustog polja), za 4 širi zbog bočnih igrača. */
+  width: 100%; max-width: 1480px;
+  margin: clamp(4px, 1.2vh, 10px) auto clamp(2px, 0.6vh, 4px);
   padding: clamp(6px, 1.4vh, 12px) clamp(8px, 1.4vw, 16px); gap: 8px;
   border-radius: 26px;
   background:
@@ -225,6 +228,9 @@ button { font: inherit; cursor: pointer; }
     0 10px 34px rgba(0, 0, 0, 0.6);
   overflow: hidden;
 }
+
+.table-felt.np2 { max-width: 1040px; }
+.table-felt.np3 { max-width: 1280px; }
 
 /* Zone oko stola: ti dolje, ostali lijevo / gore (preko puta) / desno.
    Sve zone smiju se skupiti (min-height/width:0); kombinacije po potrebi
