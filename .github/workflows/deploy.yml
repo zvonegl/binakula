@@ -28,6 +28,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+        env:
+          # Adresa online servera (Render) — klijent se spaja na nju za multiplayer.
+          VITE_PARTYKIT_HOST: binakula.onrender.com
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

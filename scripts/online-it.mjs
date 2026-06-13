@@ -5,7 +5,7 @@
 import { PartySocket } from 'partysocket';
 import { MSG, isHiddenId } from '../src/net/protocol.js';
 
-const HOST = '127.0.0.1:1999';
+const HOST = process.env.IT_HOST || '127.0.0.1:1999';
 const ROOM = 'it-' + Math.random().toString(36).slice(2, 8);
 const log = (...a) => console.log(...a);
 const fail = (m) => { console.error('✗ PAD:', m); process.exit(1); };
