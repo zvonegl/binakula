@@ -637,7 +637,7 @@ function MeldView({ g, meld, onClick, onJokerClick, canRedeem, dropTarget, rotat
       data-meld-id={meld.id}
       onClick={onClick} title={onClick ? 'Dodaj odabrane karte na ovu kombinaciju' : undefined}>
       {meld.type === 'binakula' && <div className="meld-binakula-tag">BINAKULA</div>}
-      <div className="meld-cards" style={{ '--ov': ov }}>
+      <div className="meld-cards" style={horizontal ? { '--n': n } : { '--ov': ov }}>
         {cards.map((c, i) => (
           <div key={c.id}
             className={`meld-card-slot ${c.joker && canRedeem && canRedeem(meld, c.id) ? 'redeemable' : ''}`}

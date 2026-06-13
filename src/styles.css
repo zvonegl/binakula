@@ -28,7 +28,8 @@ body { overflow: hidden; }  /* igra fita ekran — nema skrolanja stranice */
 }
 @media (max-width: 560px) {
   :root { --mh: clamp(50px, 11vh, 90px); --th: clamp(34px, 7vh, 60px); --ch: clamp(48px, 10vh, 82px); }
-  .zone-left .opp-panel, .zone-right .opp-panel { width: clamp(88px, 24vw, 130px); }
+  .zone-left .opp-panel, .zone-right .opp-panel { width: clamp(100px, 27vw, 150px); }
+  .meld-horizontal .meld-cards { --maxw: clamp(90px, 25vw, 140px); }
   .zone-top .opp-panel { min-width: 160px; }
   .meld-list { gap: 6px; }
   .seat-chip { padding: 3px 8px; }
@@ -233,7 +234,7 @@ button { font: inherit; cursor: pointer; }
 .zone-top, .zone-mine { min-height: 0; }
 
 .opp-panel { display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 0; max-height: 100%; }
-.zone-left .opp-panel, .zone-right .opp-panel { width: clamp(108px, 17vw, 252px); }
+.zone-left .opp-panel, .zone-right .opp-panel { width: clamp(132px, 21vw, 312px); }
 .zone-top .opp-panel { min-width: 240px; max-width: 60vw; }
 .opp-panel .meld-group { width: 100%; min-height: 0; }
 .opp-panel .meld-list { justify-content: center; }
@@ -283,11 +284,16 @@ button { font: inherit; cursor: pointer; }
    je karta zarotirana 90° prema tom igraču (kao za pravim stolom). Slot ima
    footprint zarotirane karte (širok = visina karte), karta je u njemu centrirana
    i zarotirana. */
-.meld-horizontal .meld-cards { flex-direction: row; align-items: center; }
+.meld-horizontal .meld-cards { flex-direction: row; align-items: center; --maxw: clamp(120px, 20vw, 300px); }
 .meld-horizontal .meld-card-slot {
   width: var(--th); height: calc(var(--th) * 0.715);
 }
-.meld-horizontal .meld-card-slot:not(:first-child) { margin-top: 0; margin-left: calc(var(--th) * var(--ov, 0.5) * -1); }
+/* Razmak se sam izračuna: malo karata → lijepo razmaknuto (do 0.66 karte),
+   puno karata → stisne se da ukupno stane u --maxw (nikad ne prelije panel). */
+.meld-horizontal .meld-card-slot:not(:first-child) {
+  margin-top: 0;
+  margin-left: calc(-1 * (var(--th) - min(var(--th) * 0.66, (var(--maxw) - var(--th)) / (var(--n) - 1))));
+}
 .meld-horizontal .meld-card-slot .card {
   position: absolute; top: 50%; left: 50%;
 }
