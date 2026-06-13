@@ -14,20 +14,24 @@ import Scoreboard, { sideName } from './Scoreboard.jsx';
 
 const SUIT_ORDER = { S: 0, H: 1, C: 2, D: 3 };
 
-export default function Game({ config, onExit }) {
+export default function Game({ config, onExit, online = null }) {
+  const isOnline = !!online;
   const gref = useRef(null);
-  if (!gref.current) {
+  if (!isOnline && !gref.current) {
     gref.current = createGame(config);
     startRound(gref.current);
   }
-  const g = gref.current;
+  // Lokalno: igra živi u ref-u i mijenja se na mjestu. Online: "g" je redigirani
+  // pogled koji stiže sa servera (moje karte prave, tuđe skrivene).
+  const g = isOnline ? online.view : gref.current;
   const players = g.config.players;
   const humanSeats = players.map((p, i) => (p.type === 'human' ? i : -1)).filter((i) => i >= 0);
-  const multiHuman = humanSeats.length > 1;
+  const multiHuman = !isOnline && humanSeats.length > 1;
 
   const [version, bump] = useReducer((x) => x + 1, 0);
-  const [viewerSeat, setViewerSeat] = useState(() =>
-    players[g.round.turn].type === 'human' ? g.round.turn : (humanSeats[0] ?? 0));
+  const [localViewerSeat, setViewerSeat] = useState(() =>
+    isOnline ? 0 : (players[g.round.turn].type === 'human' ? g.round.turn : (humanSeats[0] ?? 0)));
+  const viewerSeat = isOnline ? online.viewerSeat : localViewerSeat;
   const [handoff, setHandoff] = useState(() => multiHuman && players[g.round.turn].type === 'human');
   const [selected, setSelected] = useState(() => new Set());
   const [pileSel, setPileSel] = useState(null);
@@ -44,7 +48,9 @@ export default function Game({ config, onExit }) {
   const r = g.round;
   const mySide = sideOfSeat(g, viewerSeat);
   const viewerIsHuman = players[viewerSeat].type === 'human';
-  const myTurn = r && !r.closed && r.turn === viewerSeat && viewerIsHuman && !handoff && !summary;
+  // Online: sažetak kruga proizlazi iz stanja (krug zatvoren) jer ga svi vide.
+  const summaryOpen = summary || (isOnline && r && r.closed);
+  const myTurn = r && !r.closed && r.turn === viewerSeat && viewerIsHuman && !handoff && !summaryOpen;
   const handIds = r ? r.hands[viewerSeat] : [];
 
   function showToast(msg) {
@@ -79,10 +85,10 @@ export default function Game({ config, onExit }) {
       setSelected(new Set());
       setPileSel(null);
     }
-    if (ev.type === 'close') {
+    if (!isOnline && ev.type === 'close') {
       setTimeout(() => { setSummary(true); bump(); }, 700 + extraDelay);
     }
-    if (ev.type === 'discard') {
+    if (!isOnline && ev.type === 'discard') {
       const next = ev.nextTurn;
       if (players[next].type === 'human') {
         setViewerSeat(next);
@@ -103,9 +109,32 @@ export default function Game({ config, onExit }) {
     }
   }
 
-  // ----- botovi -------------------------------------------------------------
+  // Jedinstveni put za poteze: lokalno izvrši engine, online pošalji serveru.
+  function dispatch(action, localFn) {
+    if (isOnline) {
+      setSelected(new Set());
+      setPileSel(null);
+      online.sendAction(action);
+      return null;
+    }
+    return act(localFn);
+  }
+
+  // Online: animacije i poruke stižu kao događaji / greške sa servera.
   useEffect(() => {
-    if (!r || r.closed || summary || handoff) return;
+    if (isOnline && online.event) afterEvent(online.event.event);
+  }, [isOnline && online && online.event && online.event.seq]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (isOnline && online.error) showToast(online.error.msg);
+  }, [isOnline && online && online.error && online.error.key]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Online: svako novo stanje sa servera osvježi izvedene vrijednosti (memoizacije).
+  useEffect(() => {
+    if (isOnline) bump();
+  }, [isOnline ? online.view : null]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ----- botovi (samo lokalna igra; online ih vodi server) ------------------
+  useEffect(() => {
+    if (isOnline || !r || r.closed || summary || handoff) return;
     const seat = r.turn;
     const p = players[seat];
     if (p.type !== 'bot') return;
@@ -143,7 +172,7 @@ export default function Game({ config, onExit }) {
   }
 
   function confirmTake() {
-    const ev = act(() => takeFromDiscard(g, viewerSeat, pileSel));
+    const ev = dispatch({ type: 'takePile', index: pileSel }, () => takeFromDiscard(g, viewerSeat, pileSel));
     if (ev) setPileSel(null);
   }
 
@@ -154,12 +183,12 @@ export default function Game({ config, onExit }) {
     if (sols.length === 0) { showToast('Odabrane karte ne čine valjanu kombinaciju.'); return; }
     const hasFreeJoker = cards.some((c) => c.joker);
     if (sols.length === 1 || !hasFreeJoker) {
-      act(() => meldNew(g, viewerSeat, ids, sols[0].map));
+      dispatch({ type: 'meldNew', cardIds: ids, jokerMap: sols[0].map }, () => meldNew(g, viewerSeat, ids, sols[0].map));
     } else {
       setJokerDialog({
         title: 'Što predstavlja joker?',
         options: sols.map((sol) => ({ label: solutionLabel(g, ids, sol), sol })),
-        apply: (sol) => act(() => meldNew(g, viewerSeat, ids, sol.map)),
+        apply: (sol) => dispatch({ type: 'meldNew', cardIds: ids, jokerMap: sol.map }, () => meldNew(g, viewerSeat, ids, sol.map)),
       });
     }
   }
@@ -173,12 +202,12 @@ export default function Game({ config, onExit }) {
     if (sols.length === 0) { showToast('Odabrane karte se ne uklapaju u tu kombinaciju.'); return; }
     const hasFreeJoker = ids.some((id) => g.cardsById[id].joker);
     if (sols.length === 1 || !hasFreeJoker) {
-      act(() => meldAdd(g, viewerSeat, meld.id, ids, sols[0].map));
+      dispatch({ type: 'meldAdd', meldId: meld.id, cardIds: ids, jokerMap: sols[0].map }, () => meldAdd(g, viewerSeat, meld.id, ids, sols[0].map));
     } else {
       setJokerDialog({
         title: 'Što predstavlja joker?',
         options: sols.map((sol) => ({ label: solutionLabel(g, ids, sol), sol })),
-        apply: (sol) => act(() => meldAdd(g, viewerSeat, meld.id, ids, sol.map)),
+        apply: (sol) => dispatch({ type: 'meldAdd', meldId: meld.id, cardIds: ids, jokerMap: sol.map }, () => meldAdd(g, viewerSeat, meld.id, ids, sol.map)),
       });
     }
   }
@@ -195,7 +224,10 @@ export default function Game({ config, onExit }) {
       return;
     }
     // Tvoja karta sjeda na mjesto jokera, a joker ide u tvoju ruku.
-    act(() => redeemJoker(g, viewerSeat, { meldId: meld.id, jokerId, replacementCardId: replId }));
+    dispatch(
+      { type: 'redeemJoker', args: { meldId: meld.id, jokerId, replacementCardId: replId } },
+      () => redeemJoker(g, viewerSeat, { meldId: meld.id, jokerId, replacementCardId: replId }),
+    );
   }
 
   // Joker kojeg viewer može otkupiti: ima njegovu kartu i joker se ima kamo izložiti.
@@ -281,7 +313,7 @@ export default function Game({ config, onExit }) {
       const el = document.elementFromPoint(e.clientX, e.clientY);
       const meldEl = el && el.closest('[data-meld-id]');
       if (meldEl) { dropOnMeld(Number(meldEl.dataset.meldId), d.id); return; }
-      if (el && el.closest('.discard-outer')) { act(() => discard(g, viewerSeat, d.id)); }
+      if (el && el.closest('.discard-outer')) { dispatch({ type: 'discard', cardId: d.id }, () => discard(g, viewerSeat, d.id)); }
     }
   }
 
@@ -298,7 +330,7 @@ export default function Game({ config, onExit }) {
     const all = [...meld.cardIds, cardId].map((id) => g.cardsById[id]);
     const sols = solveJokerAssignments(all, meld.jokerMap);
     if (sols.length === 0) { showToast('Ta se karta ne uklapa u tu kombinaciju.'); return; }
-    act(() => meldAdd(g, viewerSeat, meld.id, [cardId], sols[0].map));
+    dispatch({ type: 'meldAdd', meldId: meld.id, cardIds: [cardId], jokerMap: sols[0].map }, () => meldAdd(g, viewerSeat, meld.id, [cardId], sols[0].map));
   }
 
   function nextRound() {
@@ -360,7 +392,7 @@ export default function Game({ config, onExit }) {
         <div className="zone zone-center">
           <PhaseBar phase={r.closed ? 'done' : r.phase} pending={!!r.pendingPileCardId} />
           <div className="center-row">
-            <StockPile g={g} onClick={myTurn && r.phase === 'draw' ? () => act(() => drawFromStock(g, viewerSeat)) : undefined} />
+            <StockPile g={g} onClick={myTurn && r.phase === 'draw' ? () => dispatch({ type: 'drawStock' }, () => drawFromStock(g, viewerSeat)) : undefined} />
             <DiscardSpread
               g={g} pileSel={pileSel} takeable={takeable} dropTarget={!!tableDrag}
               onCardClick={myTurn && r.phase === 'draw' ? (i) => setPileSel(i === pileSel ? null : i) : undefined}
@@ -381,9 +413,9 @@ export default function Game({ config, onExit }) {
           g={g} myTurn={myTurn} viewerSeat={viewerSeat} selected={selected} pileSel={pileSel} sortPref={sortPref}
           onConfirmTake={confirmTake} onCancelTake={() => setPileSel(null)}
           onMeld={meldSelected}
-          onDiscard={() => act(() => discard(g, viewerSeat, [...selected][0]))}
-          onClose={() => act(() => closeRound(g, viewerSeat, handIds[0]))}
-          onUndoTake={() => act(() => undoTake(g, viewerSeat))}
+          onDiscard={() => dispatch({ type: 'discard', cardId: [...selected][0] }, () => discard(g, viewerSeat, [...selected][0]))}
+          onClose={() => dispatch({ type: 'close', cardId: handIds[0] }, () => closeRound(g, viewerSeat, handIds[0]))}
+          onUndoTake={() => dispatch({ type: 'undoTake' }, () => undoTake(g, viewerSeat))}
           onSort={sortHand}
         />
         {viewerIsHuman ? (
@@ -469,8 +501,10 @@ export default function Game({ config, onExit }) {
           </div>
         </div>
       )}
-      {summary && lastResult && (
-        <RoundSummary g={g} result={lastResult} onNext={nextRound} onExit={onExit} />
+      {summaryOpen && lastResult && (
+        <RoundSummary g={g} result={lastResult}
+          online={isOnline} isHost={isOnline ? online.isHost : true}
+          onNext={isOnline ? online.nextRound : nextRound} onExit={onExit} />
       )}
       {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
       {scoreOpen && <Scoreboard g={g} onClose={() => setScoreOpen(false)} />}
@@ -702,7 +736,7 @@ function BinakulaOverlay() {
   );
 }
 
-function RoundSummary({ g, result, onNext, onExit }) {
+function RoundSummary({ g, result, onNext, onExit, online = false, isHost = true }) {
   const sides = Array.from({ length: g.nSides }, (_, i) => i);
   const closerName = g.config.players[result.closerSeat].name;
   return (
@@ -732,8 +766,10 @@ function RoundSummary({ g, result, onNext, onExit }) {
         {g.gameOver ? (
           <>
             <p className="summary-winner">Pobjednik: <b>{sideName(g, g.winnerSide)}</b> 🎉</p>
-            <button className="btn primary big" onClick={onExit}>Nova partija</button>
+            <button className="btn primary big" onClick={onExit}>{online ? 'Napusti stol' : 'Nova partija'}</button>
           </>
+        ) : online && !isHost ? (
+          <p className="score-legend" style={{ textAlign: 'center', fontSize: 15 }}>Domaćin pokreće sljedeći krug…</p>
         ) : (
           <button className="btn primary big" onClick={onNext}>Sljedeći krug</button>
         )}

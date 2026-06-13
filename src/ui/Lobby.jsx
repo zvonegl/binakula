@@ -4,7 +4,7 @@ import { seedFromString } from '../engine/rng.js';
 const DEFAULT_TARGETS = { 2: 2000, 3: 2000, 4: 2000 };
 const PAIR_OF_SEAT = ['Par 1', 'Par 2', 'Par 1', 'Par 2'];
 
-export default function Lobby({ onStart }) {
+export default function Lobby({ onStart, onBack }) {
   const [num, setNum] = useState(2);
   const [seats, setSeats] = useState([
     { name: 'Igrač 1', type: 'human', difficulty: 'medium' },
@@ -111,6 +111,7 @@ export default function Lobby({ onStart }) {
         </div>
 
         <button className="btn primary big" onClick={start}>Podijeli karte</button>
+        {onBack && <button className="btn ghost" style={{ width: '100%', marginTop: 8 }} onClick={onBack}>Natrag</button>}
       </div>
     </div>
   );

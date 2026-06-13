@@ -79,6 +79,25 @@ button { font: inherit; cursor: pointer; }
 .lobby-input { width: 100%; }
 .lobby .btn.big { width: 100%; margin-top: 6px; }
 
+/* Glavni izbornik (lokalno / online) */
+.menu-card { text-align: center; }
+.menu-btn { width: 100%; margin-top: 12px; }
+
+/* Online: kod sobe i čekaonica */
+.room-code-box {
+  text-align: center; background: rgba(244, 201, 93, 0.12);
+  border: 1px solid rgba(244, 201, 93, 0.5); border-radius: 12px;
+  padding: 12px; margin-bottom: 18px;
+}
+.room-code-label { font-size: 12px; opacity: 0.8; margin-bottom: 4px; }
+.room-code { font-size: 40px; font-weight: 800; letter-spacing: 8px; color: var(--gold); }
+.room-share { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+.seat-online-name { flex: 1; font-size: 15px; }
+.seat-online-name.waiting { opacity: 0.6; font-style: italic; }
+.lobby-or { text-align: center; opacity: 0.6; margin: 16px 0 10px; font-size: 13px; }
+.join-row { display: flex; gap: 8px; }
+.join-row .lobby-input { flex: 1; font-size: 20px; letter-spacing: 4px; text-align: center; }
+
 .pair-dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; }
 .pair-0 { background: var(--pair-0); }
 .pair-1 { background: var(--pair-1); }
