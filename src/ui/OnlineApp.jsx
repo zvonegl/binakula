@@ -74,6 +74,21 @@ export default function OnlineApp({ onExit }) {
     );
   }
 
+  // 1b) Spajanje (Render besplatni server zna "spavati" pa se budi do ~minute)
+  if (!net.lobby) {
+    return (
+      <div className="lobby"><div className="lobby-card">
+        <h1 className="lobby-title">Spajanje…</h1>
+        <p className="lobby-sub">Povezujem te sa stolom <b>{code}</b>.</p>
+        <p className="lobby-hint" style={{ textAlign: 'center' }}>
+          Ako je server neko vrijeme mirovao, budi se i to zna potrajati do tridesetak sekundi — samo pričekaj.
+        </p>
+        <div className="connecting-spinner" />
+        <button className="btn ghost" style={{ width: '100%', marginTop: 14 }} onClick={leave}>Odustani</button>
+      </div></div>
+    );
+  }
+
   // 2) Čekaonica dok partija ne krene
   const phase = net.lobby?.phase;
   if (!net.lobby || phase === 'lobby' || !net.view?.round) {

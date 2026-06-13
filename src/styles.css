@@ -98,6 +98,13 @@ button { font: inherit; cursor: pointer; }
 .join-row { display: flex; gap: 8px; }
 .join-row .lobby-input { flex: 1; font-size: 20px; letter-spacing: 4px; text-align: center; }
 
+.connecting-spinner {
+  width: 38px; height: 38px; margin: 18px auto 4px;
+  border: 4px solid rgba(244, 201, 93, 0.25); border-top-color: var(--gold);
+  border-radius: 50%; animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .pair-dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; }
 .pair-0 { background: var(--pair-0); }
 .pair-1 { background: var(--pair-1); }
