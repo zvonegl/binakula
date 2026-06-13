@@ -380,7 +380,7 @@ export default function Game({ config, onExit, online = null }) {
             {seatAt[pos] != null && (
               <div className="opp-panel">
                 <SeatChip g={g} seat={seatAt[pos]} active={r.turn === seatAt[pos] && !r.closed} dealer={g.dealer === seatAt[pos]} />
-                <MeldZone g={g} seat={seatAt[pos]}
+                <MeldZone g={g} seat={seatAt[pos]} horizontal={pos === 'left' || pos === 'right'}
                   onMeldClick={selected.size > 0 ? addToMeld : undefined}
                   onJokerClick={clickJoker} canRedeem={canRedeemJoker}
                   dropTarget={!!tableDrag && sideOfSeat(g, seatAt[pos]) === mySide} />
@@ -594,7 +594,7 @@ function PhaseBar({ phase, pending }) {
 }
 
 // Kombinacije koje je igrač izložio stoje ispred njega (po sjedalu).
-function MeldZone({ g, seat, mine, onMeldClick, onJokerClick, canRedeem, dropTarget }) {
+function MeldZone({ g, seat, mine, onMeldClick, onJokerClick, canRedeem, dropTarget, horizontal }) {
   const melds = g.round.melds.filter((m) => m.seat === seat);
   const side = sideOfSeat(g, seat);
   return (
@@ -606,7 +606,7 @@ function MeldZone({ g, seat, mine, onMeldClick, onJokerClick, canRedeem, dropTar
       <div className="meld-list">
         {melds.length === 0 && <span className="meld-empty">— još ništa izloženo —</span>}
         {melds.map((m) => (
-          <MeldView key={m.id} g={g} meld={m}
+          <MeldView key={m.id} g={g} meld={m} horizontal={horizontal}
             onClick={onMeldClick ? () => onMeldClick(m) : undefined}
             onJokerClick={onJokerClick} canRedeem={canRedeem} dropTarget={dropTarget} />
         ))}
@@ -615,14 +615,16 @@ function MeldZone({ g, seat, mine, onMeldClick, onJokerClick, canRedeem, dropTar
   );
 }
 
-function MeldView({ g, meld, onClick, onJokerClick, canRedeem, dropTarget }) {
-  // Engine drži karte od najniže prema najvišoj; u stupcu se slažu tako da je
-  // najniža DOLJE (potpuno vidljiva), a više karte idu prema gore.
-  const cards = meld.cardIds.map((id) => g.cardsById[id]).reverse();
+function MeldView({ g, meld, onClick, onJokerClick, canRedeem, dropTarget, horizontal }) {
+  // Okomito (moja/gornja zona): najniža DOLJE, najviša GORE → karte poredane
+  // visoka→niska pa idu u stupac. Vodoravno (bočni igrači): najniža LIJEVO,
+  // najviša DESNO, da kombinacija "prati" rub stola.
+  const ordered = meld.cardIds.map((id) => g.cardsById[id]);
+  const cards = horizontal ? ordered : [...ordered].reverse();
   const sc = meldScore(cards, meld.jokerMap, meld.type);
   return (
     <div
-      className={`meld ${meld.type === 'binakula' ? 'meld-binakula' : ''} ${onClick ? 'meld-target' : ''} ${dropTarget ? 'drop-ready' : ''}`}
+      className={`meld ${horizontal ? 'meld-horizontal' : ''} ${meld.type === 'binakula' ? 'meld-binakula' : ''} ${onClick ? 'meld-target' : ''} ${dropTarget ? 'drop-ready' : ''}`}
       data-meld-id={meld.id}
       onClick={onClick} title={onClick ? 'Dodaj odabrane karte na ovu kombinaciju' : undefined}>
       {meld.type === 'binakula' && <div className="meld-binakula-tag">BINAKULA</div>}

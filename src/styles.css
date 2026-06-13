@@ -62,7 +62,7 @@ button { font: inherit; cursor: pointer; }
 
 /* ===== Lobby ===== */
 
-.lobby { height: 100dvh; overflow-y: auto; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.lobby { height: 100vh; height: 100dvh; overflow-y: auto; display: flex; align-items: center; justify-content: center; padding: 24px; }
 .lobby-card {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -181,7 +181,7 @@ button { font: inherit; cursor: pointer; }
 
 /* ===== Stol ===== */
 
-.game { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+.game { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 
 .topbar {
   display: flex; align-items: center; gap: 16px;
@@ -274,6 +274,11 @@ button { font: inherit; cursor: pointer; }
 .meld-card-slot { position: relative; }
 .meld-card-slot:not(:first-child) { margin-top: calc(var(--th) * -0.6); }
 .meld-card-slot .card { box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3); }
+/* Bočni igrači (lijevo/desno): kombinacija ide VODORAVNO uz rub stola —
+   karte u redu, svakoj se vidi lijevi rub s oznakom. */
+.meld-horizontal .meld-cards { flex-direction: row; }
+.meld-horizontal .meld-card-slot:not(:first-child) { margin-top: 0; margin-left: calc(var(--th) * -0.46); }
+.meld-horizontal .meld-card-slot .card { box-shadow: -1px 0 3px rgba(0, 0, 0, 0.3); }
 /* Joker kojeg možeš otkupiti — bez isticanja (samo pokazivač i tooltip). */
 .meld-card-slot.redeemable .card { cursor: pointer; }
 .meld-score {
