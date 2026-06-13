@@ -622,13 +622,21 @@ function MeldView({ g, meld, onClick, onJokerClick, canRedeem, dropTarget, horiz
   const ordered = meld.cardIds.map((id) => g.cardsById[id]);
   const cards = horizontal ? ordered : [...ordered].reverse();
   const sc = meldScore(cards, meld.jokerMap, meld.type);
+  // Prilagodljivo preklapanje: što više karata, to se jače stišću, ali ukupna
+  // duljina kombinacije ostaje ograničena (uvijek se jasno vide prva i zadnja
+  // karta). Tako se ni dugačke kombinacije ni puno njih ne "razliju" niti skrolaju.
+  const n = cards.length;
+  const visible = horizontal ? 0.5 : 0.42;   // vidljivi dio svake karte (u jedinicama veličine)
+  const maxSpan = horizontal ? 3.4 : 2.8;     // najveća duljina kombinacije
+  const step = n > 1 ? Math.min(visible, (maxSpan - 1) / (n - 1)) : visible;
+  const ov = (1 - step).toFixed(3);           // koliko se karte preklapaju
   return (
     <div
       className={`meld ${horizontal ? 'meld-horizontal' : ''} ${meld.type === 'binakula' ? 'meld-binakula' : ''} ${onClick ? 'meld-target' : ''} ${dropTarget ? 'drop-ready' : ''}`}
       data-meld-id={meld.id}
       onClick={onClick} title={onClick ? 'Dodaj odabrane karte na ovu kombinaciju' : undefined}>
       {meld.type === 'binakula' && <div className="meld-binakula-tag">BINAKULA</div>}
-      <div className="meld-cards">
+      <div className="meld-cards" style={{ '--ov': ov }}>
         {cards.map((c, i) => (
           <div key={c.id}
             className={`meld-card-slot ${c.joker && canRedeem && canRedeem(meld, c.id) ? 'redeemable' : ''}`}

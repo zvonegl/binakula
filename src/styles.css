@@ -275,12 +275,14 @@ button { font: inherit; cursor: pointer; }
    binakuli; preklapanje se skalira s veličinom karte (--th). */
 .meld-cards { display: flex; flex-direction: column; align-items: center; }
 .meld-card-slot { position: relative; }
-.meld-card-slot:not(:first-child) { margin-top: calc(var(--th) * -0.6); }
+/* Preklapanje (--ov) postavlja MeldView prema broju karata: više karata =
+   jače stišnuto, pa kombinacija nikad ne naraste preko mjere. */
+.meld-card-slot:not(:first-child) { margin-top: calc(var(--th) * var(--ov, 0.6) * -1); }
 .meld-card-slot .card { box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3); }
 /* Bočni igrači (lijevo/desno): kombinacija ide VODORAVNO uz rub stola —
    karte u redu, svakoj se vidi lijevi rub s oznakom. */
 .meld-horizontal .meld-cards { flex-direction: row; }
-.meld-horizontal .meld-card-slot:not(:first-child) { margin-top: 0; margin-left: calc(var(--th) * -0.46); }
+.meld-horizontal .meld-card-slot:not(:first-child) { margin-top: 0; margin-left: calc(var(--th) * var(--ov, 0.5) * -1); }
 .meld-horizontal .meld-card-slot .card { box-shadow: -1px 0 3px rgba(0, 0, 0, 0.3); }
 /* Joker kojeg možeš otkupiti — bez isticanja (samo pokazivač i tooltip). */
 .meld-card-slot.redeemable .card { cursor: pointer; }
