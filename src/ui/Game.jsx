@@ -480,7 +480,7 @@ export default function Game({ config, onExit, online = null }) {
           </span>
           <div className="take-banner-cards">
             {lastTake.cardIds.map((id, i) => (
-              <div key={id} className="take-banner-slot" style={{ marginLeft: i ? -44 : 0 }}>
+              <div key={id} className="take-banner-slot">
                 <CardView card={g.cardsById[id]} size="xs" />
               </div>
             ))}
@@ -630,7 +630,6 @@ function MeldView({ g, meld, onClick, onJokerClick, canRedeem, dropTarget }) {
         {cards.map((c, i) => (
           <div key={c.id}
             className={`meld-card-slot ${c.joker && canRedeem && canRedeem(meld, c.id) ? 'redeemable' : ''}`}
-            style={{ marginTop: i ? -56 : 0 }}
             title={c.joker && canRedeem && canRedeem(meld, c.id) ? 'Imaš ovu kartu — klikni za otkup jokera!' : undefined}>
             <CardView
               card={c} size="xs" jokerAs={meld.jokerMap[c.id]}
