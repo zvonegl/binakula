@@ -547,7 +547,7 @@ function StockPile({ g, onClick }) {
   const n = g.round.stock.length;
   return (
     <div className={`stock ${onClick ? 'clickable-stock' : ''}`} onClick={onClick} title="Zatvoreni špil — klikni za vučenje">
-      <CardView faceDown size="md" />
+      <CardView faceDown size="center" />
       <div className="stock-count">{n}</div>
       <div className="stock-label">špil</div>
     </div>
@@ -570,7 +570,7 @@ function DiscardSpread({ g, pileSel, takeable, onCardClick, dropTarget }) {
             ].join(' ')}
             onClick={onCardClick ? () => onCardClick(i) : undefined}
           >
-            <CardView card={g.cardsById[id]} size="sm" />
+            <CardView card={g.cardsById[id]} size="center" />
           </div>
         ))}
       </div>

@@ -24,9 +24,10 @@ body { overflow: hidden; }  /* igra fita ekran — nema skrolanja stranice */
 :root {
   --mh: clamp(56px, 13.5vh, 122px);
   --th: clamp(42px, 9.6vh, 92px);
+  --ch: clamp(58px, 12.5vh, 112px);  /* špil + kup na sredini — malo veće */
 }
 @media (max-width: 560px) {
-  :root { --mh: clamp(50px, 11vh, 90px); --th: clamp(34px, 7vh, 60px); }
+  :root { --mh: clamp(50px, 11vh, 90px); --th: clamp(34px, 7vh, 60px); --ch: clamp(48px, 10vh, 82px); }
   .zone-left .opp-panel, .zone-right .opp-panel { width: clamp(88px, 24vw, 130px); }
   .zone-top .opp-panel { min-width: 160px; }
   .meld-list { gap: 6px; }
@@ -145,6 +146,7 @@ button { font: inherit; cursor: pointer; }
 .card.md { --h: var(--mh); }
 .card.sm { --h: var(--th); }
 .card.xs { --h: var(--th); }
+.card.center { --h: var(--ch); }   /* špil i odbačene karte na sredini */
 .card.clickable { cursor: pointer; }
 .card.clickable:hover { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4); }
 .card.selected { box-shadow: 0 0 0 3px var(--gold), 0 4px 10px rgba(0, 0, 0, 0.4); transform: translateY(-12px); }
@@ -171,13 +173,14 @@ button { font: inherit; cursor: pointer; }
 .card.joker { background: linear-gradient(160deg, #fff8e1, #ffe9b0); }
 .joker-star { text-align: center; font-size: calc(var(--h) * 0.18); margin-top: 8%; color: #c87f0a; }
 .joker-word { text-align: center; font-size: calc(var(--h) * 0.08); font-weight: 800; letter-spacing: 1px; color: #c87f0a; }
-.joker-as {
-  position: absolute; bottom: 3%; left: 4%; right: 4%;
-  background: rgba(255, 255, 255, 0.95); border: 1px solid #d9c178; border-radius: 4px;
-  font-size: calc(var(--h) * 0.115); font-weight: 800; text-align: center; padding: 1px 0;
+/* Izložen joker: zlatni ton + vrpca, a oznaka karte (kut/pip) je jasno vidljiva. */
+.card.joker-shown { background: linear-gradient(160deg, #fff4cf, #ffe093); box-shadow: inset 0 0 0 2px var(--gold), 0 1px 3px rgba(0, 0, 0, 0.35); }
+.joker-tag {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  background: var(--gold); color: #4a3300; font-weight: 800;
+  font-size: calc(var(--h) * 0.1); letter-spacing: 1px; line-height: 1.3;
+  padding: 0 calc(var(--h) * 0.06); border-radius: 0 0 5px 5px;
 }
-.joker-as.red { color: var(--red); }
-.joker-as.black { color: var(--ink); }
 
 /* ===== Stol ===== */
 
@@ -317,7 +320,7 @@ button { font: inherit; cursor: pointer; }
   background: rgba(0, 0, 0, 0.16); border-radius: 12px;
   border: 1px dashed rgba(255, 255, 255, 0.14);
 }
-.discard-slot { margin-left: calc(var(--th) * -0.58); transition: transform 0.12s; position: relative; }
+.discard-slot { margin-left: calc(var(--ch) * -0.4); transition: transform 0.12s; position: relative; }
 .discard-slot:first-child { margin-left: 0; }
 .discard-slot.takeable .card { cursor: pointer; }
 .discard-slot:hover { transform: translateY(-6px); z-index: 2; }
